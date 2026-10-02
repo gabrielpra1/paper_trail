@@ -179,7 +179,7 @@ defmodule PaperTrailTest do
                website: "http://www.acme.com",
                facebook: "acme.llc",
                location: %{country: "Chile"},
-               email_options: %{newsletter_enabled: false}
+               email_options: %{newsletter_enabled: true}
              },
              originator_id: user.id,
              origin: nil,
@@ -255,7 +255,7 @@ defmodule PaperTrailTest do
                website: "http://www.acme.com",
                facebook: "acme.llc",
                location: %{country: "Chile"},
-               email_options: %{newsletter_enabled: false}
+               email_options: %{newsletter_enabled: true}
              },
              originator_id: user.id,
              origin: nil,

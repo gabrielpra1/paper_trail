@@ -147,9 +147,15 @@ defmodule PaperTrail.Multi do
           updated_changeset = changeset |> change(%{current_version_id: initial_version.id})
           repo.update(updated_changeset)
         end)
-        |> Ecto.Multi.run(version_key, fn repo, %{initial_version: initial_version} ->
+        |> Ecto.Multi.run(version_key, fn repo,
+                                          %{
+                                            :initial_version => initial_version,
+                                            ^model_key => model
+                                          } ->
           new_item_changes =
-            initial_version.item_changes
+            changeset
+            |> Serializer.put_persisted_embeds(model)
+            |> Serializer.serialize(options, "update")
             |> Map.merge(%{
               current_version_id: initial_version.id
             })
@@ -160,8 +166,13 @@ defmodule PaperTrail.Multi do
       _ ->
         multi
         |> Ecto.Multi.update(model_key, changeset)
-        |> Ecto.Multi.run(version_key, fn repo, _changes ->
-          version = make_version_struct(%{event: "update"}, changeset, options)
+        |> Ecto.Multi.run(version_key, fn repo, %{^model_key => model} ->
+          version =
+            make_version_struct(
+              %{event: "update"},
+              Serializer.put_persisted_embeds(changeset, model),
+              options
+            )
 
           if changeset.changes == %{} do
             {:ok, nil}

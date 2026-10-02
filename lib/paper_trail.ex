@@ -294,7 +294,9 @@ defmodule PaperTrail do
           model = repo.update!(updated_changeset)
 
           new_item_changes =
-            initial_version.item_changes
+            changeset
+            |> Serializer.put_persisted_embeds(model)
+            |> Serializer.serialize(options, "update")
             |> Map.merge(%{
               current_version_id: initial_version.id
             })
@@ -304,7 +306,14 @@ defmodule PaperTrail do
 
         _ ->
           model = repo.update!(changeset)
-          version_struct = make_version_struct(%{event: "update"}, changeset, options)
+
+          version_struct =
+            make_version_struct(
+              %{event: "update"},
+              Serializer.put_persisted_embeds(changeset, model),
+              options
+            )
+
           repo.insert!(version_struct)
           model
       end
